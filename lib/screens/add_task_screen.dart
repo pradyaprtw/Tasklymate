@@ -12,6 +12,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String? _selectedCategory;
 
   final List<String> _categories = ['Kerja', 'Pribadi', 'Kuliah', 'Lainnya'];
+  TextEditingController _otherCategoryController = TextEditingController();
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -29,19 +30,24 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   }
 
   void _addTask() {
-    if (_taskController.text.isNotEmpty && _selectedDate != null && _selectedCategory != null) {
+    if (_taskController.text.isNotEmpty && _selectedDate != null && (_selectedCategory != null && (_selectedCategory != 'Lainnya' || _otherCategoryController.text.isNotEmpty))) {
       String task = _taskController.text;
       String notes = _notesController.text;
       String date = "${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}";
-      String category = _selectedCategory!;
-      
+      String category = _selectedCategory == 'Lainnya' ? _otherCategoryController.text : _selectedCategory!;
+
+      // Tambah task ke kategori 'Lainnya' jika kategori tersebut dipilih
+      if (category == 'Lainnya') {
+        category = _otherCategoryController.text;
+      }
+
       Navigator.pop(context, "$task|$date|$category|$notes");
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Tugas, tanggal, dan kategori harus diisi!'),
           backgroundColor: Colors.red,
-        )
+        ),
       );
     }
   }
@@ -81,7 +87,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   Text(
                     _selectedDate == null 
                         ? 'Tanggal Belum Dipilih!'
-                        : 'Tanggal: ${_selectedDate!.toLocal()}'.split(' ')[0],
+                        : 'Tanggal: ${_selectedDate!.day.toString().padLeft(2, '0')}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.year}',
                   ),
                   ElevatedButton(
                     onPressed: () => _selectDate(context),
@@ -105,9 +111,22 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 onChanged: (String? newValue) {
                   setState(() {
                     _selectedCategory = newValue;
+                    if (_selectedCategory == 'Lainnya') {
+                      _otherCategoryController.text = '';
+                    }
                   });
                 },
               ),
+              if (_selectedCategory == 'Lainnya') ...[
+                SizedBox(height: 20),
+                TextField(
+                  controller: _otherCategoryController,
+                  decoration: InputDecoration(
+                    labelText: 'Kategori Lainnya',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _addTask,
