@@ -112,6 +112,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                 _buildCategoryButton("Kerja"),
                 _buildCategoryButton("Pribadi"),
                 _buildCategoryButton("Kuliah"),
+                _buildCategoryButton("Lainnya")
               ],
             ),
           ),
